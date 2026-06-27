@@ -1,0 +1,65 @@
+{Got it! Let me read the frontend design skill first, then build this out properly.
+
+Now let me build the complete, polished Velvet Pay app:
+
+Here's everything that's now complete in **Velvet Pay** 🖤💚
+
+**Buttons — all working:**
+- ✅ **Add Money** → 2-step flow with quick amounts ($10–$500) + card selection
+- ✅ **Send Money** → 3-step flow: pick contact → amount + note → review & confirm
+- ✅ **Request** → QR code modal
+- ✅ **See all** → full transaction history with filters
+
+**Design — fully polished:**
+- ✅ Flip card (tap to reveal CVV)
+- ✅ Spending breakdown bars
+- ✅ Sparkline chart on balance
+- ✅ Slide-out hamburger menu
+- ✅ Quick send contacts row
+- ✅ Progress steps on flows
+
+**Live Banking:**
+- ✅ Real-time activity banner (new transactions pop in every 8s)
+- ✅ Live pulsing dot on balance
+- ✅ Balance updates instantly when you send/add money
+- ✅ Transactions feed updates in real time
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "target": "ES6",
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
