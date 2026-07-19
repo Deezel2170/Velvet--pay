@@ -1,0 +1,7 @@
+import RequestMoneyModal from "@/components/request-money-modal". const [requestOpen, setRequestOpen] = useState(false) <div className="grid grid-cols-2 gap-3">.<div className="grid grid-cols-3 gap-3"><button
+  onClick={() => setRequestOpen(true)}
+  className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-neutral-800"
+>
+  <QrCode className="size-5" />
+  Request
+</button>{requestOpen && <RequestMoneyModal onClose={() => setRequestOpen(false)} />}
