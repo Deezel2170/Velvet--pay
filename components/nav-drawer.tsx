@@ -132,7 +132,31 @@ export function NavDrawer({
           </ul>
         </nav>
 
-        {/* Footer */}
+  function NavLink({ item }: { item: NavItem }) {
+  const Icon = item.icon
+  const classes = cn(
+    "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors",
+    item.active
+      ? "bg-primary/15 text-primary"
+      : "text-neutral-300 hover:bg-neutral-800 hover:text-white"
+  )
+
+  if (item.href) {
+    return (
+      <Link href={item.href} className={classes}>
+        <Icon className="size-5" />
+        {item.label}
+      </Link>
+    )
+  }
+
+  return (
+    <button className={classes}>
+      <Icon className="size-5" />
+      {item.label}
+    </button>
+  )
+}      {/* Footer */}
         <div className="border-t border-neutral-800 p-3">
           <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white">
             <LogOut className="size-5" />
@@ -144,19 +168,3 @@ export function NavDrawer({
   )
 }
 
-function NavLink({ item }: { item: NavItem }) {
-  const Icon = item.icon
-  return (
-    <button
-      className={cn(
-        "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors",
-        item.active
-          ? "bg-primary/15 text-primary"
-          : "text-neutral-300 hover:bg-neutral-800 hover:text-white",
-      )}
-    >
-      <Icon className="size-5" />
-      {item.label}
-    </button>
-  )
-}
