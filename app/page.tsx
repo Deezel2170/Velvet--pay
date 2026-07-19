@@ -1,96 +1,47 @@
-"use client"
+// File location: netlify/functions/create-request-link.js
+//
+// Creates a shareable Stripe Checkout link for requesting money from someone.
+// Reuses the same pattern as Add Money, but framed as a "request" -
+// the amount/description reflect who's paying whom.
 
-import { useState } from "react"
-import { Menu, Plus, ArrowUpRight, QrCode } from "lucide-react"
-import { NavDrawer } from "@/components/nav-drawer"
-import SendMoneyModal from "@/components/send-money-modal"
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-export default function Page() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [sendOpen, setSendOpen] = useState(false)
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
+  }
 
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <NavDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
+  try {
+    const { amount, note, requesterName } = JSON.parse(event.body || '{}');
 
-      {/* Top bar */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-neutral-900 bg-black/80 px-4 py-4 backdrop-blur">
-        <button
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-          className="flex size-10 items-center justify-center rounded-full text-neutral-300 transition-colors hover:bg-neutral-900 hover:text-white"
-        >
-          <Menu className="size-6" />
-        </button>
+    if (!amount || amount < 50) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Amount must be at least $0.50' }) };
+    }
 
-        <span className="text-base font-semibold tracking-tight">Velvet Pay</span>
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: note || `Payment request${requesterName ? ` from ${requesterName}` : ''}`,
+            },
+            unit_amount: amount,
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.URL}/`,
+    });
 
-        <button
-          aria-label="Scan QR code"
-          className="flex size-10 items-center justify-center rounded-full text-neutral-300 transition-colors hover:bg-neutral-900 hover:text-white"
-        >
-          <QrCode className="size-6" />
-        </button>
-      </header>
-
-      {/* Content */}
-      <main className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-8">
-        <section className="flex flex-col items-center gap-1 py-6 text-center">
-          <p className="text-sm text-neutral-400">Available balance</p>
-          <p className="text-5xl font-bold tracking-tight text-balance">$1,248.30</p>
-        </section>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90">
-            <Plus className="size-5" />
-            Add money
-          </button>
-          <button
-            onClick={() => setSendOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-neutral-800"
-          >
-            <ArrowUpRight className="size-5" />
-            Send
-          </button>
-        </div>
-
-        {sendOpen && (
-          <SendMoneyModal
-            recipient={{ name: "Someone", stripeAccountId: null }}
-            onClose={() => setSendOpen(false)}
-          />
-        )}
-
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-neutral-400">Recent activity</h2>
-          <ul className="flex flex-col gap-2">
-            {[
-              { name: "Coffee Shop", time: "Today", amount: "-$4.50" },
-              { name: "Alex Rivera", time: "Yesterday", amount: "+$25.00" },
-              { name: "Grocery Mart", time: "Mon", amount: "-$62.18" },
-            ].map((tx) => (
-              <li
-                key={tx.name}
-                className="flex items-center justify-between rounded-2xl bg-neutral-950 px-4 py-3"
-              >
-                <div className="leading-tight">
-                  <p className="text-sm font-medium">{tx.name}</p>
-                  <p className="text-xs text-neutral-500">{tx.time}</p>
-                </div>
-                <span
-                  className={
-                    tx.amount.startsWith("+")
-                      ? "text-sm font-semibold text-primary"
-                      : "text-sm font-semibold text-white"
-                  }
-                >
-                  {tx.amount}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </main>
-    </div>
-  )
-}
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ url: session.url }),
+    };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  }
+};
