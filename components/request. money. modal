@@ -1,0 +1,112 @@
+// File location: components/request-money-modal.tsx
+"use client"
+
+import { useState } from "react"
+
+interface RequestMoneyModalProps {
+  onClose: () => void
+}
+
+export default function RequestMoneyModal({ onClose }: RequestMoneyModalProps) {
+  const [amount, setAmount] = useState("")
+  const [note, setNote] = useState("")
+  const [status, setStatus] = useState<"idle" | "creating" | "ready" | "error">("idle")
+  const [link, setLink] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
+
+  async function handleCreateRequest() {
+    setStatus("creating")
+    setErrorMsg("")
+
+    try {
+      const res = await fetch("/.netlify/functions/create-request-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Math.round(parseFloat(amount) * 100),
+          note,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.url) {
+        setLink(data.url)
+        setStatus("ready")
+      } else {
+        setStatus("error")
+        setErrorMsg(data.error || "Could not create request")
+      }
+    } catch {
+      setStatus("error")
+      setErrorMsg("Network error")
+    }
+  }
+
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Payment request", url: link })
+      } catch {
+        // user cancelled share sheet, no-op
+      }
+    } else {
+      await navigator.clipboard.writeText(link)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60">
+      <div className="w-full max-w-md rounded-t-2xl bg-neutral-900 p-6">
+        <h2 className="mb-4 text-lg font-bold text-white">Request money</h2>
+
+        {status === "ready" ? (
+          <>
+            <p className="mb-3 text-sm text-neutral-400">Share this link to get paid:</p>
+            <div className="mb-4 break-all rounded-lg bg-neutral-800 p-3 text-sm text-primary">
+              {link}
+            </div>
+            <button
+              onClick={handleShare}
+              className="w-full rounded-lg bg-primary py-3 font-bold text-primary-foreground"
+            >
+              Share link
+            </button>
+          </>
+        ) : (
+          <>
+            <input
+              type="number"
+              inputMode="decimal"
+              placeholder="$0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="mb-3 w-full rounded-lg bg-neutral-800 p-4 text-2xl text-white"
+            />
+            <input
+              type="text"
+              placeholder="What's it for? (optional)"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="mb-4 w-full rounded-lg bg-neutral-800 p-3 text-sm text-white"
+            />
+
+            {errorMsg && <p className="mb-2 text-sm text-red-400">{errorMsg}</p>}
+
+            <button
+              onClick={handleCreateRequest}
+              disabled={!amount || status === "creating"}
+              className="w-full rounded-lg bg-primary py-3 font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {status === "creating" ? "Creating..." : "Create request link"}
+            </button>
+          </>
+        )}
+
+        <button onClick={onClose} className="mt-3 w-full text-neutral-400">
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
