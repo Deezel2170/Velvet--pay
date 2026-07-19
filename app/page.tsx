@@ -3,9 +3,11 @@
 import { useState } from "react"
 import { Menu, Plus, ArrowUpRight, QrCode } from "lucide-react"
 import { NavDrawer } from "@/components/nav-drawer"
+import SendMoneyModal from "@/components/send-money-modal"
 
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sendOpen, setSendOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -43,11 +45,21 @@ export default function Page() {
             <Plus className="size-5" />
             Add money
           </button>
-          <button className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-neutral-800">
+          <button
+            onClick={() => setSendOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-neutral-900 px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-neutral-800"
+          >
             <ArrowUpRight className="size-5" />
             Send
           </button>
         </div>
+
+        {sendOpen && (
+          <SendMoneyModal
+            recipient={{ name: "Someone", stripeAccountId: null }}
+            onClose={() => setSendOpen(false)}
+          />
+        )}
 
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-neutral-400">Recent activity</h2>
