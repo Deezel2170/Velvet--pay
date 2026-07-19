@@ -1,4 +1,4 @@
-"use client"
+"use client"import Link from "next/link"
 
 import { useEffect } from "react"
 import {
@@ -7,7 +7,7 @@ import {
   CreditCard,
   Landmark,
   Bitcoin,
-  Gift,
+  Gift,{ label: "Settings", icon: Settings, href: "/settings" },
   Settings,
   HelpCircle,
   LogOut,
@@ -15,7 +15,12 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-type NavItem = {
+type NavItem = {type NavItem = {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  active?: boolean
+  href?: string
+}
   label: string
   icon: React.ComponentType<{ className?: string }>
   active?: boolean
